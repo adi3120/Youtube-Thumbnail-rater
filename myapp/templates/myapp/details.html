@@ -1,3 +1,4 @@
+{%load static%}
 <!doctype html>
 <html lang="en">
 
@@ -11,13 +12,16 @@
 
     <title>Thumbnail details</title>
 </head>
+<style>
+    @media only screen and (max-width: 600px) {}
+</style>
 
 <body>
     <div class="container bg-primary bg-gradient">
         <h2 class="text-center py-2 mt-4 text-white">Upload Thumbnail</h2>
     </div>
     <div class="container d-flex justify-content-center">
-        <form action="" method="post" class="w-50 p-3 shadow p-5 border border-dark" id="addform">
+        <form style="width: 70%;" action="" method="post" class="px-5 py-4 shadow border border-dark" id="addform">
             {%csrf_token%} {{form.as_p}}
             <input class='addthumb' type="button" value="Add Thumbnail">
         </form>
@@ -34,15 +38,22 @@
     <div class="container shadow p-3 mb-5 bg-body rounded" id="imageAndRating">
         <ul>
             {%for tmb in tmbs%}
-            <li class="row py-3">
+            <li class="row py-3 libody">
                 <div class="content col-sm 6">
-                    <a href="{{tmb.url}}">
-                        <img src="{{tmb.img_url}}" alt="" width="300" height="200" class="thumbimg">
+                    <a href="{{tmb.url}}" style="text-decoration: none; display:block; align-items: center;">
+                        <img src="{{tmb.img_url}}" alt="" width="300" height="200" class="thumbimg py-2">
+                        <div class="logo d-flex">
+                            <img src="{% static 'myapp/images/logo.png' %}" alt="" srcset="" width="50" height="30">
+                            <h4 class="px-2">{{tmb.title}}</h4>
+                        </div>
+
                     </a>
 
-                    <h4 style="display: inline;">
+                    <h4 style="display: inline;" class="btn btn-primary mx-2">
                         Thumbnail Rating: {{tmb.rating}}
                     </h4>
+                    <input type="button" data-tid="{{tmb.id}}" class="delbtn btn btn-danger btn-sm" value="Delete">
+                    <hr style="height:5px">
                 </div>
             </li>
             {%endfor%}
@@ -65,25 +76,50 @@
                 url: "{%url 'addthumb' %}",
                 method: "POST",
                 data: {
-                    url: url,
+                    thumburl: url,
                     csrfmiddlewaretoken: csr,
                 },
 
                 success: function(data) {
-                    console.log(data);
-                    x = data.thumbs;
-                    for (let i = 0; i < x.length; i++) {
-                        output += `<li class="row py-3">`
-                        output += `<a href="${x[i].url}" class="col-sm-3">`
-                        output += ` <img src="${x[i].img_url}" alt="" width="300" height="200" class="thumbimg"></a>`
-                        output += `<h4 class="col-sm-5">Rating: ${x[i].rating}</h4></li>`
-                    }
-                    output += "</ul>"
-                    $("#imageAndRating").html(output);
+
                     $("#urlid").val('');
                     $("#addform")[0].reset();
+                    location.reload();
                 }
             })
+        })
+
+        $(".libody").on('click', '.delbtn', function() {
+
+            // console.log("deleted");
+            mythis = this;
+            let imgid = $(this).attr("data-tid");
+            let csr = $("input[name=csrfmiddlewaretoken]").val();
+            // console.log(imgid);
+
+            $.ajax({
+
+                url: "{%url 'delthumb' %}",
+                data: {
+                    imgid: imgid,
+                    csrfmiddlewaretoken: csr,
+                },
+                method: "POST",
+                success: function(data) {
+
+                    // console.log("deleted suc");
+                    // console.log(mythis);
+                    // mythis.parentNode.parentNode.remove();
+                    $(mythis).closest("li").fadeOut();
+
+                    // mythis.parentNode.parentNode.innerHTML = ""
+                    // mythis.parentNode.parentNode.removeChild(mythis)
+
+
+                }
+
+            })
+
         })
     </script>
 
